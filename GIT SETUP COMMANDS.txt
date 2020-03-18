@@ -1,0 +1,9 @@
+GIT COMMANDS SETUP
+
+
+git init
+git remote add upstream https://github.com/JoshCourt/Auto-Video-Compliance
+git pull upstream master
+git add  *UPDATED FILE NAMES*
+git commit
+git push upstream master 
