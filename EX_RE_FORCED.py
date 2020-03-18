@@ -14,6 +14,14 @@ import os
 import shutil
 import os.path
 from pathlib import Path
+import csv
+
+"""
+    1. CSV READER - https://www.programiz.com/python-programming/reading-csv-files
+
+"""
+
+
 
 if os.path.isfile("concatlist.txt"):
     os.remove("concatlist.txt")
@@ -44,10 +52,6 @@ def message(message, string_to_print):
 	timap = dt.today().strftime('%X')
 	print("MESSAGE : "+str(timap)+" "+message+" "+str(string_to_print))
 
-workbook = xlrd.open_workbook('Template.xlsx')
-
-print(workbook.nsheets)  # number of worksheets
-print(workbook.sheet_names())  # list of worksheet names
 
 workingdirectory = os.path.abspath(os.path.dirname(sys.argv[0]))
 
@@ -55,38 +59,7 @@ footagelocation = workingdirectory+"/footage"
 Final_Edited_Files_Location = "Final_Edited_Files"
 exclude_suffix = (".xlsx", ".py", ".txt" )
 number_of_segment_for_each_timecodelist = 4
-""" There are 2 ways to access worksheets. The first way is to specify the index number. The other method is to specify the sheet name."""
-
-worksheet1 = workbook.sheet_by_index(0)
-#worksheet2 = workbook.sheet_by_name(' ')
-
-""" To iterate over the rows of the worksheets, use get_rows(). """
-
-#for row in worksheet1.get_rows():
-#    print(row)
-
-""" To get the values of each cell, use cell.value."""
-
-#for row in worksheet1.get_rows():
-#    print([cell.value for cell in row])
-
-def grab_cell_from_row_if_float(cell_num, worksheetnumber):
-    gathered = set()
-    for row in range(workbook.sheet_by_index(worksheetnumber).nrows):
-        for column in range(workbook.sheet_by_index(worksheetnumber).ncols):
-            if not row > 16:
-                print("passed check 1")
-                if not row < 4:
-                    print("passed check 2")
-                    if not column > 2:
-                        print("passed check 3")
-                        if type(workbook.sheet_by_index(worksheetnumber).cell(row,cell_num).value).__name__ == "float":
-                            print("passed check 4")
-                            #print(workbook.sheet_by_index(worksheetnumber).cell(row,cell_num).value)
-                            gathered.add(workbook.sheet_by_index(worksheetnumber).cell(row,cell_num).value)
-    gathered = sorted(gathered)
-    #print(sorted(gathered))
-    return gathered
+CSV_PAATH = "Template_2.csv"
 
 def fmttime(millisecs):
     secs = millisecs
@@ -207,6 +180,46 @@ def generate_timecodes_list_for_ffmpeg(TCs_LIST):
 
 exlude_suffix_3 = (".xlsx", ".py", ".csv")
 
+def csv_read(CSV_Path):
+    TCs = list()
+    with open(CSV_Path, 'r') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            print(row)
+            for _ in row:
+                print(_)
+                TCs.append(_)
+    return TCs
+
+
+def organise_TCs(TCs):
+    # Returns IN and OUT TCs where list contains EG: IN OUT IN OUT ect.
+    IN_TC = list()
+    OUT_TC = list()
+    count = 0
+    for _ in TCs:
+        if count == 0:
+            print("COUNT IS : "+str(count))
+            print("IN_TC is : "+str(_))
+            IN_TC.append(_)
+            count += 1
+            continue
+        elif count == 1:
+            print("COUNT IS : "+str(count))
+            print("OUT_TC is : "+str(_))
+            OUT_TC.append(_)
+            count = 0
+            continue
+    print("TCs are....")
+    TC_counter = 0
+    end_count = len(IN_TC)
+    for _ in IN_TC:
+        if TC_counter == end_count:
+            break
+        print(str(TC_counter)+". IN_TC : "+str(IN_TC[TC_counter])+" OUT_TC : "+str(OUT_TC[TC_counter]))
+        TC_counter +=1
+    return IN_TC, OUT_TC
+
 def EXRE_FORCED():
     LOF = listfiles1(footagelocation)
     for name in LOF:
@@ -218,9 +231,12 @@ def EXRE_FORCED():
             continue
 
     TC_count = 0
-    for num in range(0, workbook.nsheets):
-        IN_TCs_LIST = ["00:02:00.00", "00:17:25.05", "00:26:11.20", "00:37:56.05", "00:02:00.00", "00:14:47.08", "00:25:34.12", "00:36:47.04", "00:02:00.00", "00:16:53.19", "00:24:13.10", "00:39:31.09", "00:02:00.00", "00:15:14.01", "00:27:37.17", "00:36:47.16", "00:02:00.00", "00:15:18.16", "00:23:23.23", "00:37:08.05", "00:02:00.00", "00:15:05.21", "00:26:45.00", "00:37:36.00"]
-        OUT_TCs_LIST = ["00:17:25.05", "00:26:11.20", "00:37:56.05", "00:47:14.00", "00:14:47.08", "00:25:34.12", "00:36:47.04", "00:47:14.00", "00:16:53.19", "00:24:13.10", "00:39:31.09", "00:47:14.00", "00:15:14.01", "00:27:37.17", "00:36:47.16", "00:47:41.19", "00:15:18.16", "00:23:23.23", "00:37:08.05", "00:47:15.03", "00:15:05.21", "00:26:45.00", "00:37:36.00", "00:47:28.00"]
+    TCs = csv_read(CSV_PAATH)
+    print("TCs are : "+str(TCs))
+    IN_TCs_LIST, OUT_TCs_LIST = organise_TCs(TCs)
+    for num in range(0, len(LOF)):
+        #IN_TCs_LIST = ["00:02:00.00", "00:17:25.05", "00:26:11.20", "00:37:56.05", "00:02:00.00", "00:14:47.08", "00:25:34.12", "00:36:47.04", "00:02:00.00", "00:16:53.19", "00:24:13.10", "00:39:31.09", "00:02:00.00", "00:15:14.01", "00:27:37.17", "00:36:47.16", "00:02:00.00", "00:15:18.16", "00:23:23.23", "00:37:08.05", "00:02:00.00", "00:15:05.21", "00:26:45.00", "00:37:36.00"]
+        #OUT_TCs_LIST = ["00:17:25.05", "00:26:11.20", "00:37:56.05", "00:47:14.00", "00:14:47.08", "00:25:34.12", "00:36:47.04", "00:47:14.00", "00:16:53.19", "00:24:13.10", "00:39:31.09", "00:47:14.00", "00:15:14.01", "00:27:37.17", "00:36:47.16", "00:47:41.19", "00:15:18.16", "00:23:23.23", "00:37:08.05", "00:47:15.03", "00:15:05.21", "00:26:45.00", "00:37:36.00", "00:47:28.00"]
         INTCs_timecode_list = IN_TCs_LIST
         OUTTCs_timecode_list = OUT_TCs_LIST
 
@@ -237,7 +253,7 @@ def EXRE_FORCED():
             command = "ffmpeg -i \""+str(file)+"\" -ss "+str(INTCs_timecode_list[TC_count])+" -to "+str(OUTTCs_timecode_list[TC_count])+" -c copy  \""+str(file[:-4])+"_SEGMENT_"+str(number+1)+".mp4\""
             message("command is : ", command)
             TC_count += 1
-            subprocess.call(command, shell=True)
+            #subprocess.call(command, shell=True)
 
 
 
