@@ -270,7 +270,7 @@ def EXRE_FORCED():
             command = "ffmpeg -i \""+str(file)+"\" -ss "+str(INTCs_timecode_list[TC_count])+" -to "+str(OUTTCs_timecode_list[TC_count])+" -c copy -async 1 \""+str(file[:-4])+"_SEGMENT_"+str(number+1)+".mp4\""
             message("command is : ", command)
             TC_count += 1
-            #subprocess.call(command, shell=True)
+            subprocess.call(command, shell=True)
 
 
         """ RECHECK FOR FILES THAT SHOULDNT BE THERE!!! AND ONLY USE FILES WITH "SEGMENT" IN NAME"""
