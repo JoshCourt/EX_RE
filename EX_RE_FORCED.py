@@ -178,6 +178,22 @@ def generate_timecodes_list_for_ffmpeg(TCs_LIST):
         finallist.append(finalstring)
     return finallist
 
+def adjust_timecodes_with_ten_and_all_colons_and_within_hour_long(TC):
+    print("1. TC is : "+str(TC))
+    TC = TC[2:]
+    print("2. TC[2:] is : "+str(TC))
+    TC_nano_2 = TC[-1]
+    print("3. TC_nano_2 is : "+str(TC_nano_2))
+    TC_nano_1 = TC[-2]
+    print("4. TC_nano_1 is : "+str(TC_nano_1))
+    TC = "00"+TC
+    print("5. TC is : "+str(TC))
+    TC = TC[:-3]
+    print("6. TC is : "+str(TC))
+    TC = TC+"."+TC_nano_1+TC_nano_2
+    print("7. TC is : "+str(TC))
+    return TC
+
 exlude_suffix_3 = (".xlsx", ".py", ".csv")
 
 def csv_read(CSV_Path):
@@ -198,6 +214,7 @@ def organise_TCs(TCs):
     OUT_TC = list()
     count = 0
     for _ in TCs:
+        _ = adjust_timecodes_with_ten_and_all_colons_and_within_hour_long(_)
         if count == 0:
             print("COUNT IS : "+str(count))
             print("IN_TC is : "+str(_))
